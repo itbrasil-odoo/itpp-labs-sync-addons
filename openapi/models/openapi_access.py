@@ -459,10 +459,11 @@ class AccessCreateContext(models.Model):
             vals["name"] = urlparse.quote_plus(vals["name"].lower())
         return vals
 
-    @api.model
-    def create(self, vals):
-        vals = self._fix_name(vals)
-        return super(AccessCreateContext, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals = self._fix_name(vals)
+        return super(AccessCreateContext, self).create(vals_list)
 
     def write(self, vals):
         vals = self._fix_name(vals)
