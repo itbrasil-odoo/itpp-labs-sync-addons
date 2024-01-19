@@ -373,7 +373,7 @@ def route(controller_method):
                 response = error_response(
                     status=500,
                     error=type(e).__name__,
-                    error_descrip=e.name if hasattr(e, "name") else str(e),
+                    error_descrip=str(e),
                 )
 
             data_for_log.update(
