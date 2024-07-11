@@ -1,3 +1,42 @@
+`13.0.1`
+-------
+
+- **Fix:** update params updating on existing records
+
+`13.0.0`
+-------
+
+- **Fix:** Use `__sync.` for xmlid namespace to avoid data loss on module update.
+- **Fix:** Use task ID in xmlid namespace for the task triggers.
+- **Fix:** Keep job records (and their logs) on task deletion.
+- **New:** Add *Sync Order* — advanced manual trigger with blackjack, partners list, text input, etc.
+- **New:** Support `data.markdown` for custom documentation in the `DATA.🐫` tab.
+- **New:** Add `MAGIC.group_by_lang` to eval context.
+- **New:** Add dynamic Setting update via `PARAMS._update_param`.
+- **New:** Add computed field `text` to the model `sync.data`. Usage example in dynamic code: `DATA.restaurant.text`.
+- **Improvement:** Add `DATA.*` to the library eval context.
+- **Improvement:** Update API for attaching dynamic values: `_set_sync_value`, `_get_sync_value`. No need to use `ir.property`.
+
+`11.0.1`
+-------
+
+- **Improvement:** add `PARAMS.*` to the core eval context
+- **Improvement:** clarify error message when model is not found
+
+`11.0.0`
+-------
+
+- **New:** Use prime numbers for major releases ;-)
+- **New:** Support data files
+- **Fix:** Use Project ID for xmlid namespace
+- **New:** Support dynamic properties
+- **Improvement:** make links dependent on project
+
+`7.0.0`
+-------
+
+- **New:** Dramatic improvement on Sync Studio API
+
 `6.2.0`
 -------
 
