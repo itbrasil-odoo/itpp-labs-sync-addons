@@ -121,6 +121,8 @@ def update(d, u):
     :returns: Merged dictionary.
     :rtype: dict
     """
+    if d is None:
+        d = collections.OrderedDict([])
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
             d[k] = update(d.get(k, collections.OrderedDict([])), v)
