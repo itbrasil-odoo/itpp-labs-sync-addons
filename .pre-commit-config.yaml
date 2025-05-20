@@ -5,7 +5,7 @@ exclude: |
   # Maybe reactivate this when all README files include prettier ignore tags?
   ^README\.md$|
   # Library files can have extraneous formatting (even minimized)
-  /static/(src/)?lib/|
+  /lib/|
   # Repos using Sphinx to generate docs don't need prettying
   ^docs/_templates/.*\.html$|
   # You don't usually want a bot to modify your legal texts
@@ -34,7 +34,7 @@ repos:
         args:
           - --plugin=@prettier/plugin-xml
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v7.32.0
+    rev: v8.24.0
     hooks:
       - id: eslint
         verbose: true
