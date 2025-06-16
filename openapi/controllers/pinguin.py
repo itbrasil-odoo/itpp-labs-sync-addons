@@ -355,6 +355,15 @@ def route(controller_method):
 
         @functools.wraps(controller_method)
         def controller_method_wrapper(*iargs, **ikwargs):
+            # Permitir requisições OPTIONS sem autenticação
+            if request.httprequest.method == "OPTIONS":
+                headers = {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Authorization, Content-Type, Accept',
+                    'Access-Control-Max-Age': '86400',  # 24 hours
+                }
+                return werkzeug.wrappers.Response(status=200, headers=headers)
 
             auth_header = get_auth_header(
                 request.httprequest.headers, raise_exception=True

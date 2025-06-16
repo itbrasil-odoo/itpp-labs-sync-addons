@@ -77,21 +77,10 @@ class ApiV1Controller(http.Controller):
 
     # CreateOne
     @http.route(
-        _api_endpoint_model, methods=["POST", "OPTIONS"], type="http", auth="none", csrf=False
+        _api_endpoint_model, methods=["POST"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def create_one__POST(self, namespace, model):
-        # Handle OPTIONS request for CORS preflight
-        if request.httprequest.method == "OPTIONS":
-            headers = {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-                'Access-Control-Max-Age': '86400',  # 24 hours
-            }
-            return pinguin.http_response_from_status(status=200, headers=headers)
-
-        # Handle POST request
         data = pinguin.seguro_get_json_data()
         if data is None:
             return pinguin.error_response(
@@ -236,24 +225,13 @@ class ApiV1Controller(http.Controller):
     # Call Method on Singleton Record (optional: method parameters)
     @http.route(
         _api_endpoint_model_id_method,
-        methods=["PATCH", "OPTIONS"],
+        methods=["PATCH"],
         type="http",
         auth="none",
         csrf=False,
     )
     @pinguin.route
     def call_method_one__PATCH(self, namespace, model, id, method_name):
-        # Handle OPTIONS request for CORS preflight
-        if request.httprequest.method == "OPTIONS":
-            headers = {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-                'Access-Control-Max-Age': '86400',  # 24 hours
-            }
-            return pinguin.http_response_from_status(status=200, headers=headers)
-
-        # Handle PATCH request
         try:
             method_params = pinguin.seguro_get_json_data()
             if method_params is None:
@@ -278,24 +256,13 @@ class ApiV1Controller(http.Controller):
     # Call Method on RecordSet (optional: method parameters)
     @http.route(
         [_api_endpoint_model_method, _api_endpoint_model_method_ids],
-        methods=["PATCH", "OPTIONS"],
+        methods=["PATCH"],
         type="http",
         auth="none",
         csrf=False,
     )
     @pinguin.route
     def call_method_multi__PATCH(self, namespace, model, method_name, ids=None):
-        # Handle OPTIONS request for CORS preflight
-        if request.httprequest.method == "OPTIONS":
-            headers = {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-                'Access-Control-Max-Age': '86400',  # 24 hours
-            }
-            return pinguin.http_response_from_status(status=200, headers=headers)
-
-        # Handle PATCH request
         try:
             method_params = pinguin.seguro_get_json_data()
             if method_params is None:
@@ -309,8 +276,10 @@ class ApiV1Controller(http.Controller):
 
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(method_name, conf["method"])
-        ids = ids and ids.split(",") or []
-        ids = [int(i) for i in ids]
+        if ids is None:
+            ids = request.httprequest.args.get("ids")
+            if ids:
+                ids = pinguin.unwrap_comma_separated_ids(ids)
         return pinguin.wrap__resource__call_method(
             modelname=model,
             ids=ids,
@@ -319,12 +288,16 @@ class ApiV1Controller(http.Controller):
             success_code=pinguin.CODE__success,
         )
 
-    # Get Report
+    # Get Report as PDF
     @http.route(
-        _api_report_docids, methods=["GET", "OPTIONS"], type="http", auth="none", csrf=False
+        _api_report_docids,
+        methods=["GET", "OPTIONS"],
+        type="http",
+        auth="none",
+        csrf=False,
     )
     @pinguin.route
-    def report__GET(self, converter, namespace, report_external_id, docids):
+    def get_report_pdf__GET(self, namespace, report_external_id, docids, converter="pdf"):
         # Handle OPTIONS request for CORS preflight
         if request.httprequest.method == "OPTIONS":
             headers = {
@@ -335,6 +308,46 @@ class ApiV1Controller(http.Controller):
             }
             return pinguin.http_response_from_status(status=200, headers=headers)
 
+        return pinguin.wrap__report__get_report(
+            report_external_id=report_external_id,
+            docids=docids,
+            converter=converter,
+            success_code=pinguin.CODE__success,
+        )
+
+    # Get Report as HTML
+    @http.route(
+        _api_report_docids,
+        methods=["GET", "OPTIONS"],
+        type="http",
+        auth="none",
+        csrf=False,
+    )
+    @pinguin.route
+    def get_report_html__GET(self, namespace, report_external_id, docids, converter="html"):
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
+        return pinguin.wrap__report__get_report(
+            report_external_id=report_external_id,
+            docids=docids,
+            converter=converter,
+            success_code=pinguin.CODE__success,
+        )
+
+    # Get Report
+    @http.route(
+        _api_report_docids, methods=["GET"], type="http", auth="none", csrf=False
+    )
+    @pinguin.route
+    def report__GET(self, converter, namespace, report_external_id, docids):
         return pinguin.wrap__resource__get_report(
             namespace=namespace,
             report_external_id=report_external_id,
