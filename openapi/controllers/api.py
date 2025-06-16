@@ -77,11 +77,29 @@ class ApiV1Controller(http.Controller):
 
     # CreateOne
     @http.route(
-        _api_endpoint_model, methods=["POST"], type="http", auth="none", csrf=False
+        _api_endpoint_model, methods=["POST", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def create_one__POST(self, namespace, model):
-        data = request.get_json_data()
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
+        # Handle POST request
+        data = pinguin.seguro_get_json_data()
+        if data is None:
+            return pinguin.error_response(
+                status=400,
+                error="JSONDecodeError",
+                error_descrip="Invalid or empty JSON data",
+            )
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(
             "api_create", conf["method"], main=True, raise_exception=True
@@ -136,11 +154,29 @@ class ApiV1Controller(http.Controller):
 
     # UpdateOne
     @http.route(
-        _api_endpoint_model_id, methods=["PUT"], type="http", auth="none", csrf=False
+        _api_endpoint_model_id, methods=["PUT", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def update_one__PUT(self, namespace, model, id):
-        data = request.get_json_data()
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'PUT, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
+        # Handle PUT request
+        data = pinguin.seguro_get_json_data()
+        if data is None:
+            return pinguin.error_response(
+                status=400,
+                error="JSONDecodeError",
+                error_descrip="Invalid or empty JSON data",
+            )
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(
             "api_update", conf["method"], main=True, raise_exception=True

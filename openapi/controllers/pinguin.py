@@ -17,19 +17,27 @@ It also implements a ORP API worker in the future (maybe).
 Todo:
     * Implement API worker
     * You have to also use ``sphinx.ext.todo`` extension
-
-.. _Google Python Style Guide:
-   https://google.github.io/styleguide/pyguide.html
 """
+
 import base64
 import functools
+import json
+import logging
 import traceback
-
-import werkzeug.wrappers
+import uuid
+from inspect import getmembers
 
 import odoo
+import werkzeug
+from odoo import _, http
+from odoo.exceptions import (
+    AccessDenied,
+    AccessError,
+    MissingError,
+    ValidationError,
+)
 from odoo.http import request
-from odoo.service import security
+from psycopg2 import IntegrityError
 
 from odoo.addons.base_api.lib.pinguin import (
     error_response,
@@ -38,11 +46,6 @@ from odoo.addons.base_api.lib.pinguin import (
     get_model_for_read,
 )
 from odoo.addons.web.controllers.main import ReportController
-
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 
 ####################################
@@ -943,3 +946,36 @@ def get_OAS_definitions_part(
         del definitions[definition_name]["required"]
 
     return definitions
+
+
+def http_response_from_status(status=200, headers=None):
+    """Create an empty HTTP response with the given status code and headers.
+
+    :param int status: HTTP status code
+    :param dict headers: HTTP headers to include in the response
+    :returns: HTTP response with status and headers only
+    :rtype: werkzeug.wrappers.Response
+    """
+    response = werkzeug.wrappers.Response(status=status)
+
+    if headers:
+        for key, value in headers.items():
+            response.headers[key] = value
+
+    return response
+
+
+def seguro_get_json_data():
+    """Obtenha dados JSON da solicitação de forma segura, lidando com corpos vazios.
+
+    :returns: Dados JSON da solicitação ou None se vazio/inválido
+    :rtype: dict ou None
+    """
+    data = request.httprequest.get_data(as_text=True)
+    if not data:
+        return None
+
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError:
+        return None
