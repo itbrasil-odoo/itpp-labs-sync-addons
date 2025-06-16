@@ -121,10 +121,20 @@ class ApiV1Controller(http.Controller):
 
     # ReadMulti (optional: filters, offset, limit, order, include_fields, exclude_fields):
     @http.route(
-        _api_endpoint_model, methods=["GET"], type="http", auth="none", csrf=False
+        _api_endpoint_model, methods=["GET", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def read_multi__GET(self, namespace, model, **kw):
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(
             "api_read", conf["method"], main=True, raise_exception=True
@@ -137,10 +147,20 @@ class ApiV1Controller(http.Controller):
 
     # ReadOne (optional: include_fields, exclude_fields)
     @http.route(
-        _api_endpoint_model_id, methods=["GET"], type="http", auth="none", csrf=False
+        _api_endpoint_model_id, methods=["GET", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def read_one__GET(self, namespace, model, id, **kw):
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(
             "api_read", conf["method"], main=True, raise_exception=True
@@ -187,10 +207,20 @@ class ApiV1Controller(http.Controller):
 
     # UnlinkOne
     @http.route(
-        _api_endpoint_model_id, methods=["DELETE"], type="http", auth="none", csrf=False
+        _api_endpoint_model_id, methods=["DELETE", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def unlink_one__DELETE(self, namespace, model, id):
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(
             "api_delete", conf["method"], main=True, raise_exception=True
@@ -206,14 +236,35 @@ class ApiV1Controller(http.Controller):
     # Call Method on Singleton Record (optional: method parameters)
     @http.route(
         _api_endpoint_model_id_method,
-        methods=["PATCH"],
+        methods=["PATCH", "OPTIONS"],
         type="http",
         auth="none",
         csrf=False,
     )
     @pinguin.route
     def call_method_one__PATCH(self, namespace, model, id, method_name):
-        method_params = request.get_json_data()
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
+        # Handle PATCH request
+        try:
+            method_params = pinguin.seguro_get_json_data()
+            if method_params is None:
+                method_params = {}
+        except Exception as e:
+            return pinguin.error_response(
+                status=400,
+                error=type(e).__name__,
+                error_descrip=str(e),
+            )
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(method_name, conf["method"])
         return pinguin.wrap__resource__call_method(
@@ -227,14 +278,35 @@ class ApiV1Controller(http.Controller):
     # Call Method on RecordSet (optional: method parameters)
     @http.route(
         [_api_endpoint_model_method, _api_endpoint_model_method_ids],
-        methods=["PATCH"],
+        methods=["PATCH", "OPTIONS"],
         type="http",
         auth="none",
         csrf=False,
     )
     @pinguin.route
     def call_method_multi__PATCH(self, namespace, model, method_name, ids=None):
-        method_params = request.get_json_data()
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
+        # Handle PATCH request
+        try:
+            method_params = pinguin.seguro_get_json_data()
+            if method_params is None:
+                method_params = {}
+        except Exception as e:
+            return pinguin.error_response(
+                status=400,
+                error=type(e).__name__,
+                error_descrip=str(e),
+            )
+
         conf = pinguin.get_model_openapi_access(namespace, model)
         pinguin.method_is_allowed(method_name, conf["method"])
         ids = ids and ids.split(",") or []
@@ -249,10 +321,20 @@ class ApiV1Controller(http.Controller):
 
     # Get Report
     @http.route(
-        _api_report_docids, methods=["GET"], type="http", auth="none", csrf=False
+        _api_report_docids, methods=["GET", "OPTIONS"], type="http", auth="none", csrf=False
     )
     @pinguin.route
     def report__GET(self, converter, namespace, report_external_id, docids):
+        # Handle OPTIONS request for CORS preflight
+        if request.httprequest.method == "OPTIONS":
+            headers = {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+                'Access-Control-Max-Age': '86400',  # 24 hours
+            }
+            return pinguin.http_response_from_status(status=200, headers=headers)
+
         return pinguin.wrap__resource__get_report(
             namespace=namespace,
             report_external_id=report_external_id,

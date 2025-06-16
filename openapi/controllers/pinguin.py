@@ -117,7 +117,14 @@ def successful_response(status, data=None):
     except AttributeError:
         pass
 
-    return request.make_json_response(data, status=status)
+    response = request.make_json_response(data, status=status)
+
+    # Add CORS headers to all successful responses
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+
+    return response
 
 
 ##########################

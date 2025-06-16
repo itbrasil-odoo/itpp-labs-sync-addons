@@ -48,11 +48,18 @@ def error_response(status, error, error_descrip):
     .. _response object:
         http://werkzeug.pocoo.org/docs/0.14/wrappers/#module-werkzeug.wrappers
     """
-    return werkzeug.wrappers.Response(
+    response = werkzeug.wrappers.Response(
         status=status,
         content_type="application/json; charset=utf-8",
         response=json.dumps({"error": error, "error_descrip": error_descrip}),
     )
+
+    # Add CORS headers to all error responses
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+
+    return response
 
 
 def validate_extra_field(field):
