@@ -37,6 +37,7 @@ from odoo.exceptions import (
     ValidationError,
 )
 from odoo.http import request
+from odoo.service import security
 from psycopg2 import IntegrityError
 
 from odoo.addons.base_api.lib.pinguin import (
